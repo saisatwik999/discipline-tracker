@@ -98,7 +98,7 @@ function App() {
             </div>
           </header>
 
-          <Navbar currentView={currentView} onViewChange={setCurrentView} />
+          <Navbar currentView={currentView} onViewChange={setCurrentView} user={user} />
 
           <main>
             {currentView === 'study' && <StudyDashboard />}

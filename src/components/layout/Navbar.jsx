@@ -2,7 +2,7 @@ import React from 'react';
 import { BookOpen, User, PieChart } from 'lucide-react';
 import { SaveIndicator } from '../ui/SaveIndicator';
 
-export const Navbar = ({ currentView, onViewChange }) => {
+export const Navbar = ({ currentView, onViewChange, user }) => {
     return (
         <nav className="glass-panel" style={{
             display: 'flex',
@@ -44,7 +44,7 @@ export const Navbar = ({ currentView, onViewChange }) => {
             </div>
 
             <div style={{ position: 'absolute', right: '1rem' }}>
-                <SaveIndicator />
+                <SaveIndicator user={user} />
             </div>
         </nav>
     );

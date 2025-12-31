@@ -1,7 +1,7 @@
 import React from 'react';
 import { Cloud, Check } from 'lucide-react';
 
-export const SaveIndicator = () => {
+export const SaveIndicator = ({ user }) => {
     return (
         <div style={{
             display: 'flex',
@@ -25,7 +25,7 @@ export const SaveIndicator = () => {
                     strokeWidth: 4
                 }} />
             </div>
-            <span>Saved</span>
+            <span>Saved to {user || 'Disk'}</span>
         </div>
     );
 };
