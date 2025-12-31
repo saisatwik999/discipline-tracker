@@ -3,23 +3,45 @@ import { INITIAL_DATA } from './models';
 const STORAGE_KEY = 'discipline_tracker_v1';
 
 export const StorageService = {
-    initialize: () => {
-        const existing = localStorage.getItem(STORAGE_KEY);
+
+    currentUser: null,
+    currentKey: null,
+
+    initialize: (username) => {
+        if (!username) return;
+
+        StorageService.currentUser = username;
+        StorageService.currentKey = `discipline_tracker_user_${username.toLowerCase()}`;
+
+        console.log(`Initializing storage for user: ${username} with key: ${StorageService.currentKey}`);
+
+        const existing = localStorage.getItem(StorageService.currentKey);
         if (!existing) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DATA));
+            localStorage.setItem(StorageService.currentKey, JSON.stringify(INITIAL_DATA));
         } else {
-            // Migration: Check if 'habits' exists, if not, add it
-            const data = JSON.parse(existing);
-            if (!data.habits) {
-                data.habits = INITIAL_DATA.habits;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            // Migration/Validation
+            try {
+                const data = JSON.parse(existing);
+                if (!data.habits || !data.logs || !data.monthlyUsage) {
+                    // Shallow merge if structure is incomplete, or reset if corrupt
+                    const merged = { ...INITIAL_DATA, ...data };
+                    if (!merged.habits) merged.habits = INITIAL_DATA.habits;
+                    localStorage.setItem(StorageService.currentKey, JSON.stringify(merged));
+                }
+            } catch (e) {
+                console.error("Data corruption during init, resetting", e);
+                localStorage.setItem(StorageService.currentKey, JSON.stringify(INITIAL_DATA));
             }
         }
     },
 
     getData: () => {
+        if (!StorageService.currentKey) {
+            console.warn("StorageService accessed before initialization!");
+            return INITIAL_DATA;
+        }
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
+            const data = localStorage.getItem(StorageService.currentKey);
             return data ? JSON.parse(data) : INITIAL_DATA;
         } catch (e) {
             console.error("Data corruption", e);
@@ -28,7 +50,16 @@ export const StorageService = {
     },
 
     saveData: (data) => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        if (!StorageService.currentKey) {
+            console.error("Cannot save data: No user logged in.");
+            return;
+        }
+        try {
+            localStorage.setItem(StorageService.currentKey, JSON.stringify(data));
+        } catch (e) {
+            console.error("Failed to save data to localStorage", e);
+            alert("Warning: Storage limit reached or disabled. Data may not persist.");
+        }
     },
 
     // Helper to get formatted today date YYYY-MM-DD

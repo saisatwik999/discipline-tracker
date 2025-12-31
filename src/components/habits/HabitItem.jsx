@@ -6,6 +6,16 @@ export const HabitItem = ({ habit, status, onToggle }) => {
     const [details, setDetails] = useState('');
     const [inputOpen, setInputOpen] = useState(false);
 
+    // Sync local state with props when switching dates
+    React.useEffect(() => {
+        if (status?.details && typeof status.details === 'string') {
+            setDetails(status.details);
+        } else {
+            setDetails('');
+        }
+    }, [status]);
+
+
     const isCompleted = status?.status === 'completed';
     const { completionType, placeholder } = habit;
 
