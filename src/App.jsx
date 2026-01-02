@@ -60,11 +60,32 @@ import { NameEntry } from './components/auth/NameEntry';
 function App() {
   const [currentView, setCurrentView] = useState('study');
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleLogin = (name) => {
-    StorageService.initialize(name);
+  useEffect(() => {
+    const savedUser = localStorage.getItem('discipline_tracker_last_user');
+    if (savedUser) {
+      handleLogin(savedUser);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleLogin = async (name) => {
+    setIsLoading(true);
+    await StorageService.initialize(name);
+    localStorage.setItem('discipline_tracker_last_user', name);
     setUser(name);
+    setIsLoading(false);
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+        <p>Syncing with Cloud...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

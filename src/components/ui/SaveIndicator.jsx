@@ -25,7 +25,7 @@ export const SaveIndicator = ({ user }) => {
                     strokeWidth: 4
                 }} />
             </div>
-            <span>Saved to {user || 'Disk'}</span>
+            <span>{user ? 'Synced with Cloud' : 'Local Storage Only'}</span>
         </div>
     );
 };
