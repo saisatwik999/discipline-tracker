@@ -69,6 +69,21 @@ function App() {
     } else {
       setIsLoading(false);
     }
+
+    // Auto-sync when window is focused (for cross-device)
+    const handleFocus = () => {
+      if (StorageService.currentUser) {
+        StorageService.pullFromCloud().then(() => {
+          // Force a state refresh if needed, but pullFromCloud() already updates local storage
+          // Re-triggering local load by setting user again or similar could work.
+          // For simplicity, pullFromCloud updates local, and next interaction will use it.
+          // Better: just trigger a reload or use a broadcast channel if we had one.
+        });
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const handleLogin = async (name) => {

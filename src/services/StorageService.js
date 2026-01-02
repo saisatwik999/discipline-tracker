@@ -27,22 +27,83 @@ export const StorageService = {
         const binId = StorageService.getBinId(StorageService.currentUser);
 
         try {
-            // Force dynamic fetch from cloud to bypass device cache
             const response = await fetch(`${CLOUD_API_BASE}/${binId}?t=${Date.now()}`, {
-                cache: 'force-cache' // We'll bypass manually with timestamp
+                cache: 'no-store'
             }).catch(() => null);
 
             if (response && response.ok) {
                 const cloudData = await response.json();
                 if (cloudData && cloudData.habits) {
-                    console.log("Sync: Cloud data received.");
-                    StorageService.saveData(cloudData, false);
-                    return cloudData;
+                    const localData = StorageService.getData();
+                    const mergedData = StorageService.mergeData(localData, cloudData);
+
+                    console.log("Sync: Data merged successfully.");
+                    StorageService.saveData(mergedData, true); // Save and push the merged result
+                    return mergedData;
                 }
             }
         } catch (e) {
-            console.warn("Sync: Cloud pull skipped or failed.");
+            console.warn("Sync: Pull failed.");
         }
+    },
+
+    // Deep merge logic to combine device states
+    mergeData: (local, cloud) => {
+        if (!cloud || !cloud.logs) return local;
+        if (!local || !local.logs) return cloud;
+
+        const merged = { ...local };
+
+        // Merge logs for each system (study, normal)
+        ['study', 'normal'].forEach(system => {
+            const localLogs = local.logs[system] || {};
+            const cloudLogs = cloud.logs[system] || {};
+
+            // Collect all dates from both sources
+            const allDates = new Set([...Object.keys(localLogs), ...Object.keys(cloudLogs)]);
+
+            allDates.forEach(date => {
+                if (!merged.logs[system][date]) merged.logs[system][date] = {};
+
+                const localDay = localLogs[date] || {};
+                const cloudDay = cloudLogs[date] || {};
+
+                // Merge habits for this day
+                const allHabits = new Set([...Object.keys(localDay), ...Object.keys(cloudDay)]);
+
+                allHabits.forEach(habitId => {
+                    const localEntry = localDay[habitId];
+                    const cloudEntry = cloudDay[habitId];
+
+                    if (!localEntry) {
+                        merged.logs[system][date][habitId] = cloudEntry;
+                    } else if (cloudEntry) {
+                        // Conflict: Choose latest based on timestamp
+                        const localTime = new Date(localEntry.timestamp || 0).getTime();
+                        const cloudTime = new Date(cloudEntry.timestamp || 0).getTime();
+
+                        if (cloudTime > localTime) {
+                            merged.logs[system][date][habitId] = cloudEntry;
+                        }
+                    }
+                });
+            });
+        });
+
+        // Merge monthly usage (simple max for now)
+        if (cloud.monthlyUsage) {
+            if (!merged.monthlyUsage) merged.monthlyUsage = {};
+            Object.keys(cloud.monthlyUsage).forEach(month => {
+                if (!merged.monthlyUsage[month]) merged.monthlyUsage[month] = {};
+                Object.keys(cloud.monthlyUsage[month]).forEach(habitId => {
+                    const localVal = merged.monthlyUsage[month][habitId] || 0;
+                    const cloudVal = cloud.monthlyUsage[month][habitId] || 0;
+                    merged.monthlyUsage[month][habitId] = Math.max(localVal, cloudVal);
+                });
+            });
+        }
+
+        return merged;
     },
 
     pushToCloud: async (data) => {
