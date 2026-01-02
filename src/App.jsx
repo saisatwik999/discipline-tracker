@@ -79,9 +79,16 @@ function App() {
     setIsLoading(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('discipline_tracker_last_user');
+    setUser(null);
+    setIsLoading(false);
+  };
+
   if (isLoading) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexDirection: 'column', gap: '1rem' }}>
+        <div className="spinner"></div>
         <p>Syncing with Cloud...</p>
       </div>
     );
@@ -99,7 +106,24 @@ function App() {
     <ErrorBoundary>
       <DateProvider>
         <div className="container animate-fade-in" style={{ paddingBottom: '4rem' }}>
-          <header style={{ textAlign: 'center', margin: '3rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <header style={{ textAlign: 'center', margin: '3rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                position: 'absolute',
+                top: '-2rem',
+                right: '0',
+                background: 'transparent',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-secondary)',
+                padding: '0.4rem 0.8rem',
+                borderRadius: '8px',
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+              }}
+            >
+              Switch User
+            </button>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
               Daily Discipline <span style={{ color: 'var(--accent-study)' }}>&</span> Learning
             </h1>

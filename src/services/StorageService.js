@@ -27,16 +27,21 @@ export const StorageService = {
         const binId = StorageService.getBinId(StorageService.currentUser);
 
         try {
-            const response = await fetch(`${CLOUD_API_BASE}/${binId}`);
-            if (response.ok) {
+            // Force dynamic fetch from cloud to bypass device cache
+            const response = await fetch(`${CLOUD_API_BASE}/${binId}?t=${Date.now()}`, {
+                cache: 'force-cache' // We'll bypass manually with timestamp
+            }).catch(() => null);
+
+            if (response && response.ok) {
                 const cloudData = await response.json();
                 if (cloudData && cloudData.habits) {
+                    console.log("Sync: Cloud data received.");
                     StorageService.saveData(cloudData, false);
                     return cloudData;
                 }
             }
         } catch (e) {
-            console.warn("Cloud sync failed (Device offline or Initial run).");
+            console.warn("Sync: Cloud pull skipped or failed.");
         }
     },
 
@@ -56,9 +61,10 @@ export const StorageService = {
     },
 
     getBinId: (name) => {
-        // We use a unique ID for 'sai' to avoid collisions with others
-        if (name.toLowerCase() === 'sai') return 'c841e0671607590d9860';
-        return 'c841e0671607590d9860';
+        const user = name.toLowerCase();
+        // Updated to a private-looking slug to avoid conflicts
+        if (user === 'sai') return '6c382103f5ec28641db1';
+        return 'c841e0671607590d9861'; // Different bin for others
     },
 
     getData: () => {

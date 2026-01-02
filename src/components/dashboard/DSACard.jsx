@@ -103,10 +103,12 @@ export const DSACard = ({ habitId, status, onComplete }) => {
                             style.opacity = 0.5;
                         }
                     } else {
-                        // Standard unselected state
-                        style.borderColor = 'rgba(255,255,255,0.1)';
-                        style.background = 'rgba(255,255,255,0.02)';
+                        // Standard unselected state - STRICTLY NO HIGHLIGHTS
+                        style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                        style.background = 'rgba(255, 255, 255, 0.02)';
                         style.color = 'var(--text-secondary)';
+                        style.outline = 'none';
+                        style.WebkitTapHighlightColor = 'transparent';
                     }
 
                     return (
@@ -114,7 +116,7 @@ export const DSACard = ({ habitId, status, onComplete }) => {
                             onClick={() => handleOptionSelect(idx)}
                             style={style}
                             className="option-item"
-                            onMouseEnter={(e) => { if (!showExplanation) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                            onMouseEnter={(e) => { if (!showExplanation) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
                             onMouseLeave={(e) => { if (!showExplanation) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                         >
                             <span style={{
