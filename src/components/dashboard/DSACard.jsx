@@ -93,17 +93,34 @@ export const DSACard = ({ habitId, status, onComplete }) => {
                         if (isCorrect) {
                             style.borderColor = 'var(--status-success)';
                             style.background = 'rgba(16, 185, 129, 0.1)';
+                            style.borderWidth = '2px';
+                            style.color = 'var(--text-primary)';
                         } else if (isSelected) {
                             style.borderColor = 'var(--status-error)';
                             style.background = 'rgba(239, 68, 68, 0.1)';
+                            style.color = 'var(--text-primary)';
                         } else {
                             style.opacity = 0.5;
                         }
+                    } else {
+                        // Standard unselected state
+                        style.borderColor = 'rgba(255,255,255,0.1)';
+                        style.background = 'rgba(255,255,255,0.02)';
+                        style.color = 'var(--text-secondary)';
                     }
 
                     return (
-                        <div key={idx} onClick={() => handleOptionSelect(idx)} style={style} className={`option-item ${showExplanation && isCorrect ? 'correct' : ''}`}>
-                            <span style={{ fontWeight: isSelected || isCorrect ? 'bold' : 'normal' }}>{opt}</span>
+                        <div key={idx}
+                            onClick={() => handleOptionSelect(idx)}
+                            style={style}
+                            className="option-item"
+                            onMouseEnter={(e) => { if (!showExplanation) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                            onMouseLeave={(e) => { if (!showExplanation) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        >
+                            <span style={{
+                                fontWeight: showExplanation && (isSelected || isCorrect) ? 'bold' : 'normal',
+                                color: (showExplanation && (isSelected || isCorrect)) ? 'var(--text-primary)' : 'inherit'
+                            }}>{opt}</span>
                             {showExplanation && isCorrect && <CheckCircle size={20} color="var(--status-success)" />}
                             {showExplanation && isSelected && !isCorrect && <XCircle size={20} color="var(--status-error)" />}
                         </div>

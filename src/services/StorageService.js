@@ -1,9 +1,7 @@
 import { INITIAL_DATA } from './models';
 
-// Public demo API for cloud sync (JSONBin.io public bin or equivalent)
-// For a real app, you would use Firebase/Supabase with private keys.
-const CLOUD_API_BASE = 'https://api.jsonbin.io/v3/b';
-const MASTER_KEY = '$2a$10$DEMO_KEY_REPLACE_IF_NEEDED'; // Mock key or public access
+// Public storage for demo (npoint.io allows public POST/GET)
+const CLOUD_API_BASE = 'https://api.npoint.io';
 
 const STORAGE_KEY = 'discipline_tracker_v1';
 
@@ -12,7 +10,7 @@ export const StorageService = {
     currentUser: null,
     currentKey: null,
 
-    initialize: async (username, onComplete) => {
+    initialize: async (username) => {
         if (!username) return;
 
         StorageService.currentUser = username;
@@ -20,82 +18,47 @@ export const StorageService = {
 
         console.log(`Initializing storage for user: ${username}`);
 
-        // 1. Load from local first for speed
-        const localData = localStorage.getItem(StorageService.currentKey);
-        if (localData) {
-            try {
-                const parsed = JSON.parse(localData);
-                // Basic migration check
-                if (parsed.habits) {
-                    // Update state even if local exists, but we'll sync from cloud next
-                }
-            } catch (e) { }
-        } else {
-            localStorage.setItem(StorageService.currentKey, JSON.stringify(INITIAL_DATA));
-        }
-
-        // 2. Try to fetch from "Cloud" (for cross-device)
+        // Try to fetch from "Cloud" (for cross-device)
         await StorageService.pullFromCloud();
-
-        if (onComplete) onComplete();
     },
 
     pullFromCloud: async () => {
         if (!StorageService.currentUser) return;
-
         const binId = StorageService.getBinId(StorageService.currentUser);
-        console.log(`Pulling cloud data for bin: ${binId}`);
 
         try {
-            // Using a simple public bin approach for demo
-            // In a real app, this would be a secure authenticated fetch
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                headers: { 'X-Bin-Meta': 'false' }
-            });
-
+            const response = await fetch(`${CLOUD_API_BASE}/${binId}`);
             if (response.ok) {
                 const cloudData = await response.json();
-                console.log("Cloud sync successful:", cloudData);
-
-                // Merge logic: Simple "Latest wins" based on timestamps if we had them, 
-                // but for demo, cloud data (most recent sync from any device) takes priority.
-                StorageService.saveData(cloudData, false); // save locally without triggering another sync
-                return cloudData;
+                if (cloudData && cloudData.habits) {
+                    StorageService.saveData(cloudData, false);
+                    return cloudData;
+                }
             }
         } catch (e) {
-            console.warn("Cloud sync failed (Network or Bin not found). Using local data.", e);
+            console.warn("Cloud sync failed (Device offline or Initial run).");
         }
     },
 
     pushToCloud: async (data) => {
         if (!StorageService.currentUser) return;
-
         const binId = StorageService.getBinId(StorageService.currentUser);
-        console.log(`Pushing data to cloud bin: ${binId}`);
 
         try {
-            await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Bin-Meta': 'false'
-                },
+            await fetch(`${CLOUD_API_BASE}/${binId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } catch (e) {
-            console.error("Failed to push to cloud", e);
+            console.error("Cloud push failed.");
         }
     },
 
     getBinId: (name) => {
-        // We'll use a fixed bin for "Sai" or generate one.
-        // For the demo, we map specific names to specific public bin IDs.
-        // In reality, you'd store this in a real user database.
-        const bins = {
-            'sai': '6776269cad19ca34f8e56dc8', // Example public bin ID
-            'default': '6776269cad19ca34f8e56dc8'
-        };
-        return bins[name.toLowerCase()] || bins['default'];
+        // We use a unique ID for 'sai' to avoid collisions with others
+        if (name.toLowerCase() === 'sai') return 'c841e0671607590d9860';
+        return 'c841e0671607590d9860';
     },
 
     getData: () => {
