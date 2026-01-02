@@ -1,8 +1,8 @@
 import { StorageService } from './StorageService';
 import { SYSTEMS, FREQUENCY, HABIT_TYPES } from './models';
-import { DSA_QUESTIONS } from './DSAQuestionBank';
+import { DSA_QUESTIONS_FULL } from './DSAQuestions_Full';
 
-// Seeded Random Helper
+// Seeded Random Helper (Deprecated for Question selection, but kept if needed elsewhere)
 const seededRandom = (seed) => {
     let value = 0;
     for (let i = 0; i < seed.length; i++) {
@@ -32,12 +32,19 @@ export const HabitService = {
     getDailyQuestion: (dateFilter = null) => {
         const dateStr = dateFilter || StorageService.getToday();
 
-        // Use the date string as a seed to randomly select a question
-        // This ensures the same question appears for the same date for everyone (or at least consistent per user/day)
-        const rand = seededRandom(dateStr);
-        const idx = Math.floor(rand * DSA_QUESTIONS.length);
+        // Calculate Day of Year (1-366) to ensure no repeats for a year
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        const start = new Date(y, 0, 0);
+        const diff = date - start;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
 
-        return DSA_QUESTIONS[idx];
+        // Use Day of Year to select from the 366+ question bank
+        // Jan 1st is Day 1 -> index 0.
+        const idx = (dayOfYear - 1) % DSA_QUESTIONS_FULL.length;
+
+        return DSA_QUESTIONS_FULL[idx] || DSA_QUESTIONS_FULL[0];
     },
 
     getDSAHistory: () => {
