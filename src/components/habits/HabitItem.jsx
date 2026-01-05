@@ -70,7 +70,14 @@ export const HabitItem = ({ habit, status, onToggle }) => {
                 </div>
 
                 {isCompleted && status?.details && typeof status.details === 'string' && (
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{
+                        fontSize: '0.85rem',
+                        color: 'var(--text-muted)',
+                        marginTop: '0.5rem',
+                        lineHeight: '1.4',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap'
+                    }}>
                         {status.details}
                     </span>
                 )}

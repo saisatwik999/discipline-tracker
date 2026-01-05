@@ -131,13 +131,33 @@ export const DSACard = ({ habitId, status, onComplete }) => {
             </div>
 
             {showExplanation && (
-                <div className="animate-scale-in" style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                    <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{ width: '4px', height: '20px', background: 'var(--accent-study)', borderRadius: '2px' }}></div>
-                        <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Explanation</h4>
+                <div className="animate-scale-in" style={{
+                    marginTop: '2rem',
+                    padding: '1.5rem',
+                    background: 'rgba(0,0,0,0.2)',
+                    borderRadius: '12px',
+                    border: `1px solid ${selectedOption === question.correct ? 'var(--status-success)' : 'var(--status-error)'}`,
+                    boxShadow: selectedOption === question.correct ? '0 0 15px rgba(16, 185, 129, 0.1)' : '0 0 15px rgba(239, 68, 68, 0.1)'
+                }}>
+                    <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ width: '4px', height: '20px', background: 'var(--accent-study)', borderRadius: '2px' }}></div>
+                            <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>
+                                {selectedOption === question.correct ? 'Correct! Well Done' : 'Not Quite Right'}
+                            </h4>
+                        </div>
+                        <span style={{
+                            fontSize: '0.8rem',
+                            color: selectedOption === question.correct ? 'var(--status-success)' : 'var(--status-error)',
+                            fontWeight: 'bold'
+                        }}>
+                            {selectedOption === question.correct ? 'Verified' : `Correct Answer: ${question.options[question.correct]}`}
+                        </span>
                     </div>
 
-                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{question.explanation}</p>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-primary)', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                        {question.explanation}
+                    </p>
 
                     <div style={{ display: 'grid', gap: '0.8rem' }}>
                         {question.optionExplanations && question.options.map((opt, i) => (
@@ -145,11 +165,11 @@ export const DSACard = ({ habitId, status, onComplete }) => {
                                 fontSize: '0.9rem',
                                 padding: '0.8rem',
                                 borderRadius: '8px',
-                                background: i === question.correct ? 'rgba(16, 185, 129, 0.05)' : 'transparent',
-                                borderLeft: i === question.correct ? '2px solid var(--status-success)' : '2px solid transparent'
+                                background: i === question.correct ? 'rgba(16, 185, 129, 0.05)' : i === selectedOption ? 'rgba(239, 68, 68, 0.05)' : 'transparent',
+                                borderLeft: i === question.correct ? '2px solid var(--status-success)' : i === selectedOption ? '2px solid var(--status-error)' : '2px solid transparent'
                             }}>
-                                <span style={{ color: i === question.correct ? 'var(--status-success)' : 'var(--text-secondary)', fontWeight: 'bold', display: 'block', marginBottom: '0.25rem' }}>
-                                    {i === question.correct ? "Correct Answer" : "Option " + (i + 1)}
+                                <span style={{ color: i === question.correct ? 'var(--status-success)' : i === selectedOption ? 'var(--status-error)' : 'var(--text-secondary)', fontWeight: 'bold', display: 'block', marginBottom: '0.25rem' }}>
+                                    {i === question.correct ? "Correct Answer" : i === selectedOption ? "Your Choice" : "Option " + (i + 1)}
                                 </span>
                                 <span style={{ color: 'var(--text-secondary)' }}>
                                     {question.optionExplanations[i]}
