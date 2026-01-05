@@ -24,8 +24,18 @@ export const DSACard = ({ habitId, status, onComplete }) => {
     useEffect(() => {
         if (status?.status === 'completed') {
             setShowExplanation(true);
+
+            // Recover selected option from details if possible
+            if (status.details && question) {
+                const parts = status.details.split(' | ');
+                const selectedPart = parts[0]?.replace('Selected: ', '');
+                const idx = question.options.indexOf(selectedPart);
+                if (idx !== -1) {
+                    setSelectedOption(idx);
+                }
+            }
         }
-    }, [status]);
+    }, [status, question]);
 
     if (!question) return null;
 
