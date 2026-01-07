@@ -71,21 +71,23 @@ export const ConsistencyEngine = {
 
     calculateTillNow: (system) => {
         const data = StorageService.getData();
-        const startDate = data.userProfile.startDate;
-        const today = StorageService.getToday();
         const logs = data.logs[system];
         const systemGrace = data.graceDays?.[system] || [];
 
-        const allDates = getDateRange(startDate, today);
         // Only count DAILY habits for Till-Now consistency (exclude monthly)
         const mandatoryIds = ConsistencyEngine.getMandatoryHabits(system, 'daily');
 
         if (mandatoryIds.length === 0) return 0; // Avoid divide by zero
 
+        // Get all dates that have logs (only count days where user actually tracked)
+        const loggedDates = Object.keys(logs);
+
+        if (loggedDates.length === 0) return 0; // No data logged yet
+
         let totalPossible = 0;
         let totalCompleted = 0;
 
-        allDates.forEach(date => {
+        loggedDates.forEach(date => {
             // Skip grace days
             if (systemGrace.includes(date)) return;
 
